@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Translator Hub - Luyện Biên Dịch Anh - Việt</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1',
+                            600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, ::before, ::after { box-sizing: border-box !important; }
+        html, body { min-height: 100%; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.2s ease, color 0.2s ease; margin: 0; padding: 0; }
+        .font-inter { font-family: 'Inter', sans-serif !important; }
+        .font-vinamilk { font-family: 'Mali', cursive, sans-serif !important; }
+        
+        #user-translation { line-height: 1.5rem !important; resize: none; font-size: 0.95rem; }
+        
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.4); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(107, 114, 128, 0.7); }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
+    <!-- Header Navigation -->
+    <header class="bg-indigo-900 text-white shadow-md flex-none z-40 sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-indigo-300 flex items-center justify-center text-indigo-950 font-bold text-xl shadow-inner">
+                    <i class="fa-solid fa-language"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg sm:text-xl tracking-tight leading-none text-white">Translator Hub</h1>
+                    <span class="text-xs sm:text-sm text-indigo-200 font-medium">Luyện Biên Dịch Anh - Việt </span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleDarkMode()" id="theme-toggle-btn" title="Sáng / Tối" class="bg-indigo-800 hover:bg-indigo-700 text-amber-300 px-3 py-1.5 rounded-xl border border-indigo-700 transition flex items-center gap-1.5 shadow-sm text-xs sm:text-sm font-semibold">
+                    <i class="fa-solid fa-moon"></i>
+                    <span class="hidden md:inline">Sáng/Tối</span>
+                </button>
+
+                <button onclick="toggleFontFamily()" id="font-btn" class="bg-indigo-800 hover:bg-indigo-700 text-white text-xs sm:text-sm px-3 py-1.5 rounded-xl border border-indigo-700 font-semibold transition cursor-pointer flex items-center gap-1">
+                    <i class="fa-solid fa-font text-amber-400"></i>
+                    <span id="font-btn-label">Font: Inter</span>
+                </button>
+
+                <button onclick="toggleApiModal()" class="bg-indigo-800 hover:bg-indigo-700 text-xs sm:text-sm px-3 py-1.5 rounded-xl border border-indigo-700 transition flex items-center gap-1.5 shadow-sm font-semibold">
+                    <i class="fa-solid fa-key text-amber-400"></i>
+                    <span class="hidden sm:inline">API Key</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex-grow w-full flex flex-col">
+
+        <!-- PRACTICE WORKSPACE -->
+        <section id="swipe-area" class="flex-grow flex flex-col space-y-4">
+            <!-- Filter Bar -->
+            <div class="bg-white dark:bg-slate-800 px-3.5 py-2.5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap gap-2.5 items-center justify-between">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <div class="flex items-center bg-slate-100 dark:bg-slate-700 p-0.5 rounded-lg border border-slate-200 dark:border-slate-600">
+                        <button id="mode-en-vi" onclick="setTranslationMode('EN_VI')" class="px-3 py-1.5 text-xs sm:text-sm font-bold rounded-md bg-indigo-600 text-white shadow-sm transition">Anh → Việt</button>
+                        <button id="mode-vi-en" onclick="setTranslationMode('VI_EN')" class="px-3 py-1.5 text-xs sm:text-sm font-bold rounded-md text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition">Việt → Anh</button>
+                    </div>
+
+                    <div class="flex items-center space-x-1.5">
+                        <label class="font-semibold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">Chủ đề:</label>
+                        <select id="topic-select" onchange="onCategoryFilterChange(this.value)" class="border border-slate-300 dark:border-slate-600 rounded-lg px-2.5 py-1.5 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-slate-100 font-medium text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500">
+                        </select>
+                    </div>
+
+                    <div class="relative min-w-[140px] sm:min-w-[170px]">
+                        <input type="text" id="search-input" oninput="onSearchInput(this.value)" placeholder="Tìm kiếm..." class="w-full pl-8 pr-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-xs sm:text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                    </div>
+
+                    <button onclick="generateAIExercise()" id="ai-generate-btn" title="Tạo câu mới chuẩn B2 bằng Gemini AI" class="px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-xs sm:text-sm rounded-lg shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                        <span>AI Tạo Câu</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Câu:</span>
+                    <span id="exercise-counter" class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 font-bold px-2.5 py-0.5 rounded-full text-xs sm:text-sm">1/100</span>
+                </div>
+            </div>
+
+            <!-- Workspace Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow">
+                <!-- Left Column -->
+                <div class="lg:col-span-7 flex flex-col space-y-4">
+                    <!-- Source Text Card -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span id="source-lang-label" class="text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded border border-indigo-100 dark:border-indigo-900/50">Văn bản gốc (Tiếng Anh)</span>
+                            <button onclick="toggleAudio()" id="tts-audio-btn" class="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-xs sm:text-sm font-semibold flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50 transition">
+                                <i class="fa-solid fa-volume-high text-indigo-500 text-sm" id="tts-icon"></i> <span id="tts-label">Nghe đọc</span>
+                            </button>
+                        </div>
+
+                        <div>
+                            <p id="source-text" class="text-base sm:text-lg font-medium text-slate-800 dark:text-slate-100 leading-relaxed"></p>
+                        </div>
+                        
+                        <div class="border-t border-slate-100 dark:border-slate-700/60 pt-2.5">
+                            <span class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">
+                                <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Gợi ý thuật ngữ (Rê chuột/Chạm xem nghĩa):
+                            </span>
+                            <div id="glossary-chips" class="flex flex-wrap gap-2 py-1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Translation Input Card -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label id="target-lang-label" for="user-translation" class="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">Bản dịch của bạn:</label>
+                            <span id="api-status-hint" class="text-xs text-slate-400">Đang chạy chế độ Local</span>
+                        </div>
+                        
+                        <textarea id="user-translation" oninput="onUserTranslationInput(this.value)" rows="4" class="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none leading-relaxed" placeholder="Nhập bản dịch biên dịch tại đây... (Hệ thống sẽ tự động nhận xét thời gian thực)"></textarea>
+                        
+                        <div class="flex justify-between items-center flex-wrap gap-2 pt-1">
+                            <div class="flex items-center gap-2">
+                                <button onclick="prevExercise()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs sm:text-sm font-semibold flex items-center">
+                                    <i class="fa-solid fa-chevron-left mr-1"></i> Trước
+                                </button>
+                                <button onclick="nextExercise()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs sm:text-sm font-semibold flex items-center">
+                                    Sau <i class="fa-solid fa-chevron-right ml-1"></i>
+                                </button>
+                                <button onclick="pickRandomExercise()" id="random-exercise-btn" title="Chuyển ngẫu nhiên" class="px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900/60 hover:bg-indigo-200 dark:hover:bg-indigo-800 text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-sm rounded-lg shadow-sm transition flex items-center gap-1 border border-indigo-200 dark:border-indigo-700">
+                                    <i class="fa-solid fa-shuffle text-xs"></i>
+                                    <span>Đổi câu</span>
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="clearInput()" class="px-3 py-1.5 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs sm:text-sm font-semibold">Xóa</button>
+                                <button onclick="evaluateTranslationWithAI(true)" id="eval-main-btn" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-lg shadow-sm transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-eye" id="eval-main-btn-icon"></i> <span id="eval-main-btn-text">Xem Đáp Án Mẫu</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Evaluation & Tips -->
+                <div class="lg:col-span-5 flex flex-col space-y-4">
+                    <!-- Theory / Tips Box -->
+                    <div class="bg-indigo-50/70 dark:bg-indigo-950/40 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/60 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-book-open-reader text-indigo-500"></i> Mẹo & Lý thuyết biên dịch
+                            </span>
+                            <button onclick="refreshRandomTip()" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-right"></i> Mẹo khác
+                            </button>
+                        </div>
+                        <div id="random-tip-content" class="p-3 bg-white dark:bg-slate-800 rounded-lg border border-indigo-100 dark:border-indigo-900/30 text-sm text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
+                        </div>
+                    </div>
+
+                    <!-- Evaluation Card -->
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col flex-grow space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+                            <span class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                                <i class="fa-solid fa-square-poll-vertical text-indigo-500"></i> Đánh giá & Phân tích bản dịch
+                            </span>
+                        </div>
+
+                        <div id="eval-status-message" class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 italic py-6 text-center my-auto">
+                            Nhập bản dịch vào ô bên cạnh để xem kết quả phân tích trực tiếp.
+                        </div>
+
+                        <div id="eval-details" class="hidden flex-col space-y-3">
+                            <!-- Feedback Alert Box -->
+                            <div id="feedback-alert" class="p-3.5 rounded-xl text-xs sm:text-sm font-medium flex items-start gap-2.5 border">
+                                <i id="feedback-icon" class="fa-solid text-base mt-0.5 flex-none"></i>
+                                <div class="space-y-1 w-full">
+                                    <div id="feedback-title" class="font-bold text-sm"></div>
+                                    <div id="feedback-text" class="leading-relaxed"></div>
+                                </div>
+                            </div>
+
+                            <!-- Reference Translation -->
+                            <div class="space-y-1">
+                                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Bản dịch tham khảo:</span>
+                                <div id="reference-translation" class="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-lg text-sm font-medium text-indigo-900 dark:text-indigo-200 border border-indigo-100 dark:border-indigo-900/40 leading-relaxed"></div>
+                            </div>
+
+                            <!-- Alternatives & Suggestions -->
+                            <div id="alternatives-box" class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700/60">
+                                <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block flex items-center gap-1">
+                                    <i class="fa-solid fa-feather-pointed"></i> Đề xuất & Từ đồng nghĩa:
+                                </span>
+                                <div id="alternatives-list" class="space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- API Key Modal -->
+    <div id="api-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full shadow-xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-500"></i> Cấu hình Google Gemini API Key
+                </h3>
+                <button onclick="toggleApiModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Tùy chọn: Nhập Gemini API Key cá nhân của bạn để mở khóa tính năng AI chấm điểm chi tiết 3 phần & tự động sinh bài tập mới. Nếu không nhập, web vẫn chạy chế độ Local bình thường.
+            </p>
+            <input type="password" id="api-key-input" placeholder="AIzaSy..." class="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="toggleApiModal()" class="px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300">Hủy</button>
+                <button onclick="saveApiKey()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm">Lưu Key</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // --- 1. INITIAL DATA: 100 EXERCISES (10 CATEGORIES x 10 B2 COMPLEX SENTENCES) ---
+        const INITIAL_EXERCISES = [];
+
+        (function build100B2ComplexExercises() {
+            const b2ComplexData = {
+                Tourism: [
+                    {
+                        en: "Although sustainable tourism initiatives require substantial initial investment, they offer long-term ecological preservation and generate stable revenue streams for local communities.",
+                        vi: "Dù các sáng kiến du lịch bền vững đòi hỏi nguồn vốn đầu tư ban đầu không nhỏ, chúng mang lại hiệu quả bảo tồn sinh thái lâu dài và tạo nguồn thu nhập ổn định cho cộng đồng địa phương.",
+                        g: [{ en: "sustainable tourism initiatives", vi: "sáng kiến du lịch bền vững" }, { en: "ecological preservation", vi: "bảo tồn sinh thái" }, { en: "stable revenue streams", vi: "nguồn thu nhập ổn định" }]
+                    },
+                    {
+                        en: "Because uncontrolled overtourism severely degrades coastal ecosystems, municipal authorities are implementing strict daily visitor caps during peak seasons.",
+                        vi: "Do tình trạng du lịch quá mức vượt kiểm soát làm suy thoái nghiêm trọng hệ sinh thái ven biển, chính quyền thành phố đang áp dụng hạn ngạch khách tham quan hàng ngày nghiêm ngặt trong mùa cao điểm.",
+                        g: [{ en: "uncontrolled overtourism", vi: "du lịch quá mức vượt kiểm soát" }, { en: "coastal ecosystems", vi: "hệ sinh thái ven biển" }, { en: "visitor caps", vi: "hạn ngạch khách tham quan" }]
+                    },
+                    {
+                        en: "In order to appeal to modern travelers who seek authentic cultural immersion, local tour operators have developed experiential packages alongside indigenous families.",
+                        vi: "Nhằm thu hút du khách hiện đại những người mong muốn trải nghiệm văn hóa chân thực, các đơn vị lữ hành địa phương đã phát triển các gói du lịch trải nghiệm sinh sống cùng gia đình bản địa.",
+                        g: [{ en: "authentic cultural immersion", vi: "trải nghiệm văn hóa chân thực" }, { en: "indigenous families", vi: "gia đình bản địa" }]
+                    },
+                    {
+                        en: "While simplifying visa entry regulations has successfully boosted international arrivals, it has also placed unprecedented pressure on urban transit networks.",
+                        vi: "Mặc dù việc nới lỏng các quy định thị thực nhập cảnh đã thúc đẩy thành công lượng khách quốc tế, chính sách này cũng gây áp lực chưa từng có lên hệ thống giao thông đô thị.",
+                        g: [{ en: "visa entry regulations", vi: "quy định thị thực nhập cảnh" }, { en: "urban transit networks", vi: "hệ thống giao thông đô thị" }]
+                    },
+                    {
+                        en: "Having recognized the commercial potential of heritage tourism, the government invested heavily in restoring centuries-old monuments to transform forgotten districts.",
+                        vi: "Nhận thấy tiềm năng thương mại của du lịch di sản, chính phủ đã đầu tư mạnh mẽ vào việc trùng tu các di tích hàng trăm năm tuổi nhằm biến các khu vực bị lãng quên thành điểm đến hấp dẫn.",
+                        g: [{ en: "heritage tourism", vi: "du lịch di sản" }, { en: "centuries-old monuments", vi: "di tích hàng trăm năm tuổi" }]
+                    },
+                    {
+                        en: "If destinations fail to balance promotional marketing with infrastructure upgrades, tourist dissatisfaction will inevitably rise due to overcrowded facilities.",
+                        vi: "Nếu các điểm đến không cân bằng giữa tiếp thị quảng bá với nâng cấp hạ tầng, sự không hài lòng của du khách chắc chắn sẽ gia tăng do các cơ sở vật chất bị quá tải.",
+                        g: [{ en: "infrastructure upgrades", vi: "nâng cấp hạ tầng" }, { en: "overcrowded facilities", vi: "cơ sở vật chất quá tải" }]
+                    },
+                    {
+                        en: "By adopting eco-friendly hospitality practices, boutique hotels not only reduce operational waste but also attract environmentally conscious guests.",
+                        vi: "Bằng việc áp dụng các phương thức kinh doanh khách sạn thân thiện với môi trường, các khách sạn nhỏ không chỉ giảm thiểu rác thải vận hành mà còn thu hút những du khách có ý thức sinh thái.",
+                        g: [{ en: "hospitality practices", vi: "phương thức kinh doanh khách sạn" }, { en: "environmentally conscious", vi: "có ý thức về môi trường" }]
+                    },
+                    {
+                        en: "Even though digital booking platforms have streamlined itinerary planning, many travelers still rely on human agents for complex international routes.",
+                        vi: "Dù các nền tảng đặt phòng kỹ thuật số đã tối ưu hóa việc lên lịch trình, nhiều du khách vẫn dựa vào đại lý tư vấn cho các chuyến đi quốc tế phức tạp.",
+                        g: [{ en: "digital booking platforms", vi: "nền tảng đặt dịch vụ kỹ thuật số" }, { en: "streamlined itinerary planning", vi: "tối ưu hóa lịch trình" }]
+                    },
+                    {
+                        en: "Unless local authorities actively enforce waste management rules near beach resorts, marine life will continue to suffer from plastic contamination.",
+                        vi: "Trừ khi chính quyền địa phương thực thi nghiêm ngặt các quy định quản lý rác thải gần khu nghỉ dưỡng ven biển, sinh vật biển sẽ tiếp tục chịu ảnh hưởng từ ô nhiễm nhựa.",
+                        g: [{ en: "enforce waste management rules", vi: "thực thi quy định quản lý rác thải" }, { en: "plastic contamination", vi: "ô nhiễm rác thải nhựa" }]
+                    },
+                    {
+                        en: "Virtual reality tours, which gained massive popularity during recent travel restrictions, are now used by museums as promotional teasers.",
+                        vi: "Các tour du lịch thực tế ảo, vốn trở nên phổ biến mạnh mẽ trong đợt hạn chế di chuyển gần đây, hiện đang được các bảo tàng sử dụng làm công cụ quảng bá xem trước.",
+                        g: [{ en: "Virtual reality tours", vi: "Tour du lịch thực tế ảo" }, { en: "promotional teasers", vi: "công cụ quảng bá xem trước" }]
+                    }
+                ],
+
+                Business: [
+                    {
+                        en: "Faced with intensifying global competition, multinational corporations are restructuring their supply chains to enhance operational flexibility and minimize political risks.",
+                        vi: "Đứng trước sự cạnh tranh toàn cầu ngày càng gay gắt, các tập đoàn đa quốc gia đang tái cấu trúc chuỗi cung ứng nhằm nâng cao tính linh hoạt vận hành và giảm thiểu rủi ro chính trị.",
+                        g: [{ en: "multinational corporations", vi: "tập đoàn đa quốc gia" }, { en: "restructuring supply chains", vi: "tái cấu trúc chuỗi cung ứng" }, { en: "minimize political risks", vi: "giảm thiểu rủi ro chính trị" }]
+                    },
+                    {
+                        en: "Although integrating automation tools requires substantial upfront expenditure, it ultimately streamlines production workflows and reduces long-term labor costs.",
+                        vi: "Mặc dù tích hợp các công cụ tự động hóa đòi hỏi chi phí đầu tư ban đầu lớn, nó giúp tinh gọn quy trình sản xuất và cắt giảm chi phí nhân công về lâu dài.",
+                        g: [{ en: "automation tools", vi: "công cụ tự động hóa" }, { en: "upfront expenditure", vi: "chi phí đầu tư ban đầu" }, { en: "streamlines production workflows", vi: "tinh gọn quy trình sản xuất" }]
+                    },
+                    {
+                        en: "Because consumer behavior shifted dramatically toward online commerce, traditional brick-and-mortar retailers had to create omnichannel shopping strategies to survive.",
+                        vi: "Do hành vi tiêu dùng chuyển dịch mạnh mẽ sang thương mại điện tử, các cửa hàng bán lẻ truyền thống buộc phải xây dựng chiến lược bán hàng đa kênh để tồn tại.",
+                        g: [{ en: "brick-and-mortar retailers", vi: "bán lẻ truyền thống" }, { en: "omnichannel shopping strategies", vi: "chiến lược bán hàng đa kênh" }]
+                    },
+                    {
+                        en: "Provided that cross-functional teams maintain transparent lines of communication, complex product development cycles can be shortened significantly.",
+                        vi: "Với điều kiện các nhóm liên chức năng duy trì các kênh giao tiếp minh bạch, chu kỳ phát triển sản phẩm phức tạp có thể được rút ngắn đáng kể.",
+                        g: [{ en: "cross-functional teams", vi: "nhóm liên chức năng" }, { en: "product development cycles", vi: "chu kỳ phát triển sản phẩm" }]
+                    },
+                    {
+                        en: "While venture capital funding has slowed down recently, innovative startups with solid business models continue to secure strategic investments.",
+                        vi: "Mặc dù nguồn vốn đầu tư mạo hiểm có sự chững lại gần đây, các công ty khởi nghiệp đổi mới sáng tạo với mô hình kinh doanh vững chắc vẫn tiếp tục thu hút đầu tư chiến lược.",
+                        g: [{ en: "venture capital funding", vi: "nguồn vốn đầu tư mạo hiểm" }, { en: "innovative startups", vi: "khởi nghiệp đổi mới sáng tạo" }]
+                    },
+                    {
+                        en: "By conducting thorough market research prior to launch, enterprises can identify niche demographics and reduce the probability of commercial failure.",
+                        vi: "Bằng cách thực hiện nghiên cứu thị trường kỹ lưỡng trước khi ra mắt, doanh nghiệp có thể xác định phân phúc khách hàng ngách và giảm thiểu khả năng thất bại thương mại.",
+                        g: [{ en: "market research", vi: "nghiên cứu thị trường" }, { en: "niche demographics", vi: "phân phúc khách hàng ngách" }]
+                    },
+                    {
+                        en: "Corporate social responsibility programs, which were once viewed as mere marketing tactics, are now essential for maintaining brand reputation.",
+                        vi: "Các chương trình trách nhiệm xã hội của doanh nghiệp, vốn từng bị xem là chiêu trò tiếp thị đơn thuần, nay trở thành yếu tố thiết yếu để giữ gìn uy tín thương hiệu.",
+                        g: [{ en: "Corporate social responsibility", vi: "trách nhiệm xã hội doanh nghiệp" }, { en: "brand reputation", vi: "uy tín thương hiệu" }]
+                    },
+                    {
+                        en: "Unless executive leaders foster a culture of continuous innovation, established companies risk being disrupted by agile tech newcomers.",
+                        vi: "Trừ khi các nhà lãnh đạo điều hành thúc đẩy văn hóa đổi mới liên tục, các công ty lâu đời luôn đứng trước nguy cơ bị các đối thủ công nghệ trẻ trung đánh bại.",
+                        g: [{ en: "continuous innovation", vi: "đổi mới liên tục" }, { en: "agile tech newcomers", vi: "đối thủ công nghệ linh hoạt" }]
+                    },
+                    {
+                        en: "Having expanded rapidly into emerging overseas markets, the tech firm established regional headquarters to handle localized customer demands.",
+                        vi: "Sau khi mở rộng nhanh chóng sang các thị trường mới nổi ở nước ngoài, công ty công nghệ đã thành lập các trụ sở khu vực để xử lý nhu cầu khách hàng bản địa.",
+                        g: [{ en: "emerging overseas markets", vi: "thị trường mới nổi nước ngoài" }, { en: "regional headquarters", vi: "trụ sở khu vực" }]
+                    },
+                    {
+                        en: "If employee burnout rates remain unaddressed, operational productivity will plummet alongside a steep increase in staff turnover.",
+                        vi: "Nếu tình trạng kiệt sức của nhân viên không được xử lý, năng suất vận hành sẽ sụt giảm mạnh đi kèm với tỷ lệ nghỉ việc tăng cao.",
+                        g: [{ en: "employee burnout rates", vi: "tỷ lệ kiệt sức của nhân viên" }, { en: "staff turnover", vi: "tỷ lệ nhảy việc / nghỉ việc" }]
+                    }
+                ],
+
+                Environment: [
+                    {
+                        en: "Although transitioning to renewable energy requires grid overhaul, it drastically lowers carbon emissions and dependence on imported fossil fuels.",
+                        vi: "Mặc dù chuyển đổi sang năng lượng tái tạo đòi hỏi nâng cấp toàn bộ lưới điện, nó giúp giảm mạnh lượng khí thải carbon và sự phụ thuộc vào nhiên liệu hóa thạch nhập khẩu.",
+                        g: [{ en: "renewable energy", vi: "năng lượng tái tạo" }, { en: "grid overhaul", vi: "nâng cấp lưới điện" }, { en: "carbon emissions", vi: "lượng khí thải carbon" }]
+                    },
+                    {
+                        en: "Because global temperatures are rising at an alarming pace, polar ice caps are melting faster than scientists initially predicted.",
+                        vi: "Do nhiệt độ toàn cầu đang tăng ở mức đáng báo động, các băng đảo ở cực đang tan nhanh hơn nhiều so với dự báo ban đầu của các nhà khoa học.",
+                        g: [{ en: "alarming pace", vi: "mức độ đáng báo động" }, { en: "polar ice caps", vi: "băng đảo ở hai cực" }]
+                    },
+                    {
+                        en: "In an effort to protect biodiversity, marine conservation zones have been established where industrial fishing is strictly prohibited.",
+                        vi: "Nhằm nỗ lực bảo vệ đa dạng sinh học, các khu bảo tồn biển đã được thành lập nơi mà hoạt động đánh bắt hải sản công nghiệp bị cấm nghiêm ngặt.",
+                        g: [{ en: "protect biodiversity", vi: "bảo vệ đa dạng sinh học" }, { en: "marine conservation zones", vi: "khu bảo tồn biển" }]
+                    },
+                    {
+                        en: "While single-use plastics are convenient for everyday packaging, their non-biodegradable nature poses a catastrophic threat to marine life.",
+                        vi: "Mặc dù nhựa dùng một lần rất tiện lợi cho đóng gói hàng ngày, bản chất khó phân hủy của chúng gây ra mối đe dọa thảm khốc đối với sinh vật biển.",
+                        g: [{ en: "single-use plastics", vi: "nhựa dùng một lần" }, { en: "non-biodegradable nature", vi: "bản chất khó phân hủy" }]
+                    },
+                    {
+                        en: "By implementing circular economy models, manufacturing plants can reprocess industrial waste into valuable secondary raw materials.",
+                        vi: "Bằng việc triển khai mô hình kinh tế tuần hoàn, các nhà máy chế tạo có thể tái chế rác thải công nghiệp thành nguyên liệu thứ cấp có giá trị.",
+                        g: [{ en: "circular economy models", vi: "mô hình kinh tế tuần hoàn" }, { en: "industrial waste", vi: "rác thải công nghiệp" }]
+                    },
+                    {
+                        en: "Reforestation projects, which absorb atmospheric carbon dioxide, play a pivotal role in mitigating severe climate disruption.",
+                        vi: "Các dự án trồng lại rừng, giúp hấp thụ khí CO2 trong khí quyển, đóng vai trò then chốt trong việc giảm thiểu sự biến đổi khí hậu nghiêm trọng.",
+                        g: [{ en: "Reforestation projects", vi: "dự án trồng lại rừng" }, { en: "mitigating climate disruption", vi: "giảm thiểu biến đổi khí hậu" }]
+                    },
+                    {
+                        en: "Provided that urban planners incorporate green roofs and parks, city temperatures can be reduced by combatting the urban heat island effect.",
+                        vi: "Với điều kiện các nhà quy hoạch đô thị đưa mái nhà xanh và công viên vào thiết kế, nhiệt độ thành phố có thể giảm nhờ chống lại hiệu ứng đảo nhiệt đô thị.",
+                        g: [{ en: "urban planners", vi: "nhà quy hoạch đô thị" }, { en: "urban heat island effect", vi: "hiệu ứng đảo nhiệt đô thị" }]
+                    },
+                    {
+                        en: "Unless carbon taxes are enforced globally, heavily polluting industries will continue to bypass environmental standards by moving production abroad.",
+                        vi: "Trừ khi thuế carbon được thực thi trên toàn cầu, các ngành ô nhiễm nặng sẽ tiếp tục né tránh quy chuẩn môi trường bằng cách chuyển cơ sở sản xuất ra nước ngoài.",
+                        g: [{ en: "enforced globally", vi: "thực thi trên toàn cầu" }, { en: "environmental standards", vi: "quy chuẩn môi trường" }]
+                    },
+                    {
+                        en: "Having suffered from severe soil erosion caused by deforestation, agricultural communities are switching to sustainable agroforestry techniques.",
+                        vi: "Sau khi chịu tổn thất do xói mòn đất nghiêm trọng bởi nạn phá rừng, các cộng đồng nông nghiệp đang chuyển sang áp dụng kỹ thuật lâm nghiệp kết hợp nông nghiệp bền vững.",
+                        g: [{ en: "soil erosion", vi: "xói mòn đất" }, { en: "agroforestry techniques", vi: "kỹ thuật nông lâm kết hợp" }]
+                    },
+                    {
+                        en: "If governments fail to curb methane emissions promptly, achieving long-term atmospheric stabilization targets will become practically impossible.",
+                        vi: "Nếu các chính phủ không cắt giảm khí thải mê-tan kịp thời, việc đạt được các mục tiêu ổn định khí quyển lâu dài sẽ trở nên gần như không thể.",
+                        g: [{ en: "curb methane emissions", vi: "cắt giảm khí thải mê-tan" }, { en: "stabilization targets", vi: "mục tiêu ổn định" }]
+                    }
+                ],
+
+                Education: [
+                    {
+                        en: "By integrating adaptive learning software into classrooms, educators can tailor complex lessons to match each student's unique learning speed.",
+                        vi: "Bằng việc tích hợp phần mềm học tập thích ứng vào lớp học, các giáo viên có thể tùy chỉnh các bài học phức tạp sao cho phù hợp với tốc độ tiếp thu của từng học sinh.",
+                        g: [{ en: "adaptive learning software", vi: "phần mềm học tập thích ứng" }, { en: "unique learning speed", vi: "tốc độ tiếp thu riêng" }]
+                    },
+                    {
+                        en: "Although vocational training programs prepare students directly for immediate employment, traditional academic degrees remain highly valued by recruiters.",
+                        vi: "Mặc dù các chương trình đào tạo nghề chuẩn bị trực tiếp cho học viên làm việc ngay, các bằng cấp học thuật truyền thống vẫn được nhà tuyển dụng đánh giá cao.",
+                        g: [{ en: "vocational training programs", vi: "chương trình đào tạo nghề" }, { en: "immediate employment", vi: "việc làm ngay lập tức" }]
+                    },
+                    {
+                        en: "Because digital literacy has become an essential life skill, educational ministries are revamping school curriculums to include coding and data analysis.",
+                        vi: "Do năng lực ứng dụng công nghệ số đã trở thành kỹ năng sống thiết yếu, các bộ giáo dục đang cải tổ giáo trình học để đưa vào môn lập trình và phân tích dữ liệu.",
+                        g: [{ en: "digital literacy", vi: "năng lực ứng dụng công nghệ số" }, { en: "revamping school curriculums", vi: "cải tổ giáo trình nhà trường" }]
+                    },
+                    {
+                        en: "While standardized testing provides uniform quantitative metrics, critics argue that it fails to measure critical thinking and creative problem-solving.",
+                        vi: "Mặc dù kiểm tra chuẩn hóa cung cấp chỉ số đo lường định lượng thống nhất, các nhà phản biện cho rằng nó không đo lường được tư duy phản biện và giải quyết vấn đề sáng tạo.",
+                        g: [{ en: "standardized testing", vi: "kiểm tra chuẩn hóa" }, { en: "critical thinking", vi: "tư duy phản biện" }]
+                    },
+                    {
+                        en: "Having recognized the mental health challenges faced by students, modern universities are establishing comprehensive counseling centers across campuses.",
+                        vi: "Nhận thấy những thách thức về sức khỏe tinh thần mà sinh viên phải đối mặt, các trường đại học hiện đại đang thành lập các trung tâm tư vấn tâm lý toàn diện trong khuôn viên trường.",
+                        g: [{ en: "mental health challenges", vi: "thách thức sức khỏe tinh thần" }, { en: "counseling centers", vi: "trung tâm tư vấn tâm lý" }]
+                    },
+                    {
+                        en: "If higher education tuition costs continue to escalate unchecked, lower-income students will be excluded from career advancement opportunities.",
+                        vi: "Nếu chi phí học phí đại học tiếp tục gia tăng vượt kiểm soát, các sinh viên có thu nhập thấp sẽ bị tước đi cơ hội thăng tiến sự nghiệp.",
+                        g: [{ en: "tuition costs", vi: "chi phí học phí" }, { en: "career advancement", vi: "thăng tiến sự nghiệp" }]
+                    },
+                    {
+                        en: "Project-based learning, which encourages collaborative teamwork, prepares graduates for the interdisciplinary demands of modern workplaces.",
+                        vi: "Phương pháp học qua dự án, vốn khuyến khích làm việc nhóm hợp tác, giúp sinh viên tốt nghiệp sẵn sàng cho các yêu cầu liên ngành tại môi trường làm việc hiện đại.",
+                        g: [{ en: "Project-based learning", vi: "Học qua dự án" }, { en: "interdisciplinary demands", vi: "yêu cầu liên ngành" }]
+                    },
+                    {
+                        en: "Provided that scholarship funds are allocated based on merit and financial need, talented students from underprivileged backgrounds can succeed.",
+                        vi: "Với điều kiện nguồn quỹ học bổng được phân bổ dựa trên thành tích và nhu cầu tài chính, các học sinh tài năng từ hoàn cảnh khó khăn hoàn toàn có thể thành công.",
+                        g: [{ en: "allocated based on merit", vi: "phân bổ dựa trên thành tích" }, { en: "underprivileged backgrounds", vi: "hoàn cảnh khó khăn" }]
+                    },
+                    {
+                        en: "Unless early childhood education receives sufficient public funding, cognitive development gaps between socio-economic groups will widen.",
+                        vi: "Trừ khi giáo dục mầm non nhận được đủ ngân sách công, khoảng cách phát triển nhận thức giữa các nhóm kinh tế xã hội sẽ ngày càng mở rộng.",
+                        g: [{ en: "early childhood education", vi: "giáo dục mầm non" }, { en: "cognitive development gaps", vi: "khoảng cách phát triển nhận thức" }]
+                    },
+                    {
+                        en: "Distance learning platforms, which expanded dramatically during pandemic lockdowns, now offer flexible hybrid degree programs nationwide.",
+                        vi: "Các nền tảng đào tạo từ xa, vốn phát triển mạnh mẽ trong thời gian phong tỏa dịch bệnh, hiện cung cấp các chương trình đại học kết hợp linh hoạt trên toàn quốc.",
+                        g: [{ en: "Distance learning platforms", vi: "Nền tảng đào tạo từ xa" }, { en: "hybrid degree programs", vi: "chương trình bằng cấp kết hợp" }]
+                    }
+                ],
+
+                Culture: [
+                    {
+                        en: "Provided that local communities actively participate in cultural preservation efforts, traditional arts can withstand modern commercialization without losing authenticity.",
+                        vi: "Với điều kiện cộng đồng địa phương chủ động tham gia bảo tồn văn hóa, các nghệ thuật truyền thống có thể đứng vững trước làn sóng thương mại hóa mà không mất đi bản sắc.",
+                        g: [{ en: "cultural preservation", vi: "bảo tồn văn hóa" }, { en: "modern commercialization", vi: "thương mại hóa hiện đại" }, { en: "without losing authenticity", vi: "không mất đi bản sắc" }]
+                    },
+                    {
+                        en: "Although global media streaming services bring international entertainment to diverse audiences, they sometimes obscure local cinematic traditions.",
+                        vi: "Mặc dù các dịch vụ phát trực tuyến truyền thông toàn cầu mang giải trí quốc tế đến đông đảo khán giả, đôi khi chúng làm mờ đi các truyền thống điện ảnh bản địa.",
+                        g: [{ en: "global media streaming", vi: "phát trực tuyến truyền thông toàn cầu" }, { en: "cinematic traditions", vi: "truyền thống điện ảnh" }]
+                    },
+                    {
+                        en: "Because language is deeply intertwined with cultural identity, indigenous communities strive to document endangered dialects for future generations.",
+                        vi: "Do ngôn ngữ gắn kết chặt chẽ với bản sắc văn hóa, các cộng đồng bản địa nỗ lực ghi chép lại những tiếng địa phương đang có nguy cơ mai một cho thế hệ mai sau.",
+                        g: [{ en: "cultural identity", vi: "bản sắc văn hóa" }, { en: "endangered dialects", vi: "tiếng địa phương có nguy cơ mai một" }]
+                    },
+                    {
+                        en: "While historical museum artifacts provide tangible links to ancient civilizations, ongoing debates surround the repatriation of looted items.",
+                        vi: "Dù các hiện vật bảo tàng lịch sử cung cấp mối liên kết hữu hình với các nền văn minh cổ đại, những tranh cãi vẫn tiếp diễn xung quanh việc trả lại di vật bị đánh cắp.",
+                        g: [{ en: "tangible links", vi: "mối liên kết hữu hình" }, { en: "repatriation of looted items", vi: "trả lại hiện vật bị tước đoạt" }]
+                    },
+                    {
+                        en: "By hosting international cultural exchange festivals, cities foster cross-border empathy and celebrate diverse artistic expressions.",
+                        vi: "Bằng việc tổ chức các liên hoan giao lưu văn hóa quốc tế, các thành phố thúc đẩy sự thấu hiểu xuyên biên giới và tôn vinh các biểu đạt nghệ thuật đa dạng.",
+                        g: [{ en: "cultural exchange festivals", vi: "liên hoan giao lưu văn hóa" }, { en: "cross-border empathy", vi: "sự thấu hiểu xuyên biên giới" }]
+                    },
+                    {
+                        en: "Having recognized the educational value of intangible heritage, UNESCO cataloged traditional musical rituals to encourage worldwide protection.",
+                        vi: "Nhận thấy giá trị giáo dục của di sản phi vật thể, UNESCO đã lập danh mục các nghi lễ âm nhạc truyền thống nhằm khuyến khích sự bảo vệ trên toàn thế giới.",
+                        g: [{ en: "intangible heritage", vi: "di sản phi vật thể" }, { en: "musical rituals", vi: "nghi lễ âm nhạc" }]
+                    },
+                    {
+                        en: "If young generations disregard historical customs, unique oral traditions will disappear gradually under the influence of rapid urbanization.",
+                        vi: "Nếu các thế hệ trẻ xem nhẹ các phong tục lịch sử, các truyền thống truyền miệng độc đáo sẽ dần biến mất dưới ảnh hưởng của đô thị hóa nhanh chóng.",
+                        g: [{ en: "disregard historical customs", vi: "xem nhẹ phong tục lịch sử" }, { en: "rapid urbanization", vi: "đô thị hóa nhanh chóng" }]
+                    },
+                    {
+                        en: "Architectural restoration projects, which require specialized craftsmanship, aim to reconstruct damaged historical monuments faithfully.",
+                        vi: "Các dự án trùng tu kiến trúc, vốn đòi hỏi tay nghề thủ công chuyên biệt, hướng tới việc tái thiết các di tích lịch sử bị hư hại một cách trung thực.",
+                        g: [{ en: "Architectural restoration", vi: "Trùng tu kiến trúc" }, { en: "specialized craftsmanship", vi: "tay nghề thủ công chuyên biệt" }]
+                    },
+                    {
+                        en: "Unless public funding supports independent artists, commercial pop culture will completely dominant mainstream media broadcasting.",
+                        vi: "Trừ khi kinh phí công hỗ trợ các nghệ sĩ độc lập, văn hóa đại chúng thương mại sẽ thống trị hoàn toàn các kênh phát sóng truyền thông chính thống.",
+                        g: [{ en: "independent artists", vi: "nghệ sĩ độc lập" }, { en: "mainstream media", vi: "truyền thông chính thống" }]
+                    },
+                    {
+                        en: "Culinary heritage, which reflects local agricultural history, serves as a powerful diplomatic tool for international tourism promotion.",
+                        vi: "Di sản ẩm thực, vốn phản ánh lịch sử nông nghiệp địa phương, đóng vai trò như một công cụ ngoại giao mạnh mẽ cho việc quảng bá du lịch quốc tế.",
+                        g: [{ en: "Culinary heritage", vi: "Di sản ẩm thực" }, { en: "diplomatic tool", vi: "công cụ ngoại giao" }]
+                    }
+                ],
+
+                Health: [
+                    {
+                        en: "In an effort to alleviate overloaded public hospitals, health ministries encourage preventive healthcare through nationwide awareness campaigns.",
+                        vi: "Nhằm nỗ lực giảm tải cho các bệnh viện công, bộ y tế khuyến khích chăm sóc sức khỏe chủ động thông qua các chiến dịch nâng cao nhận thức toàn quốc.",
+                        g: [{ en: "overloaded public hospitals", vi: "bệnh viện công quá tải" }, { en: "preventive healthcare", vi: "chăm sóc sức khỏe chủ động" }]
+                    },
+                    {
+                        en: "Although advanced medical technologies significantly improve diagnostic precision, high treatment costs render them inaccessible to low-income patients.",
+                        vi: "Mặc dù công nghệ y tế tiên tiến cải thiện đáng kể độ chính xác chẩn đoán, chi phí điều trị cao khiến người bệnh thu nhập thấp khó tiếp cận.",
+                        g: [{ en: "diagnostic precision", vi: "độ chính xác chẩn đoán" }, { en: "low-income patients", vi: "bệnh nhân thu nhập thấp" }]
+                    },
+                    {
+                        en: "Because sedentary lifestyles correlate strongly with cardiovascular diseases, health experts urge urban residents to engage in regular physical activity.",
+                        vi: "Do lối sống ít vận động có liên quan chặt chẽ đến các bệnh tim mạch, các chuyên gia y tế kêu gọi người dân đô thị duy trì hoạt động thể chất thường xuyên.",
+                        g: [{ en: "sedentary lifestyles", vi: "lối sống ít vận động" }, { en: "cardiovascular diseases", vi: "bệnh tim mạch" }]
+                    },
+                    {
+                        en: "While prescription antibiotics are effective against bacterial infections, overusing them leads to dangerous antimicrobial resistance.",
+                        vi: "Mặc dù thuốc kháng sinh theo đơn có hiệu quả chống lại nhiễm khuẩn, việc lạm dụng chúng dẫn đến tình trạng kháng kháng sinh nguy hiểm.",
+                        g: [{ en: "prescription antibiotics", vi: "thuốc kháng sinh theo đơn" }, { en: "antimicrobial resistance", vi: "kháng kháng sinh" }]
+                    },
+                    {
+                        en: "By expanding telemedicine services to rural areas, governments allow patients in remote communities to consult top medical specialists effortlessly.",
+                        vi: "Bằng việc mở rộng dịch vụ khám chữa bệnh từ xa tới vùng nông thôn, chính phủ giúp bệnh nhân tại các cộng đồng hẻo lánh tư vấn bác sĩ chuyên khoa dễ dàng.",
+                        g: [{ en: "telemedicine services", vi: "dịch vụ khám chữa bệnh từ xa" }, { en: "remote communities", vi: "cộng đồng hẻo lánh" }]
+                    },
+                    {
+                        en: "Having completed clinical trials successfully, the pharmaceutical company sought regulatory approval for its innovative cancer therapy.",
+                        vi: "Sau khi hoàn tất thử nghiệm lâm sàng thành công, công ty dược phẩm đã nộp đơn xin phê duyệt từ cơ quan quản lý cho phương pháp điều trị ung thư mới.",
+                        g: [{ en: "clinical trials", vi: "thử nghiệm lâm sàng" }, { en: "regulatory approval", vi: "phê duyệt từ cơ quan quản lý" }]
+                    },
+                    {
+                        en: "If dietary guidelines focus solely on weight reduction rather than holistic nutrition, individuals may suffer from hidden micronutrient deficiencies.",
+                        vi: "Nếu các hướng dẫn ăn uống chỉ tập trung vào việc giảm cân thay vì dinh dưỡng toàn diện, cá nhân có thể gặp phải tình trạng thiếu hụt vi chất ẩn.",
+                        g: [{ en: "dietary guidelines", vi: "hướng dẫn ăn uống" }, { en: "holistic nutrition", vi: "dinh dưỡng toàn diện" }]
+                    },
+                    {
+                        en: "Mental health support programs, which were long stigmatized in workplace environments, are now prioritized by human resource managers.",
+                        vi: "Các chương trình hỗ trợ sức khỏe tinh thần, vốn lâu nay bị định kiến trong môi trường làm việc, hiện được các quản lý nhân sự ưu tiên hàng đầu.",
+                        g: [{ en: "Mental health support", vi: "Hỗ trợ sức khỏe tinh thần" }, { en: "stigmatized", vi: "bị định kiến / kỳ thị" }]
+                    },
+                    {
+                        en: "Provided that vaccination coverage reaches herd immunity thresholds, seasonal viral outbreaks can be controlled effectively.",
+                        vi: "Với điều kiện tỉ lệ tiêm chủng đạt đến ngưỡng miễn dịch cộng đồng, các đợt bùng phát vi-rút theo mùa có thể được kiểm soát hiệu quả.",
+                        g: [{ en: "vaccination coverage", vi: "tỉ lệ tiêm chủng" }, { en: "herd immunity thresholds", vi: "ngưỡng miễn dịch cộng đồng" }]
+                    },
+                    {
+                        en: "Unless public health policies address environmental pollution, respiratory illnesses among urban children will continue to escalate.",
+                        vi: "Trừ khi các chính sách y tế công cộng giải quyết triệt để ô nhiễm môi trường, các bệnh đường hô hấp ở trẻ em đô thị sẽ tiếp tục gia tăng.",
+                        g: [{ en: "public health policies", vi: "chính sách y tế công cộng" }, { en: "respiratory illnesses", vi: "bệnh đường hô hấp" }]
+                    }
+                ],
+
+                Banking: [
+                    {
+                        en: "By raising benchmark interest rates, the central bank aims to curb soaring inflation, although this policy increases borrowing costs for home buyers.",
+                        vi: "Bằng việc nâng lãi suất điều hành, ngân hàng trung ương hướng tới kiềm chế lạm phát leo thang, mặc dù chính sách này làm tăng chi phí vay mua nhà.",
+                        g: [{ en: "benchmark interest rates", vi: "lãi suất điều hành" }, { en: "soaring inflation", vi: "lạm phát leo thang" }, { en: "borrowing costs", vi: "chi phí vay vốn" }]
+                    },
+                    {
+                        en: "Although digital banking transactions offer unparalleled convenience, financial institutions must continuously upgrade cybersecurity protocols to prevent data breaches.",
+                        vi: "Mặc dù các giao dịch ngân hàng số mang lại sự tiện lợi vượt trội, các tổ chức tài chính phải liên tục nâng cấp hệ thống bảo mật để ngăn chặn rò rỉ dữ liệu.",
+                        g: [{ en: "digital banking transactions", vi: "giao dịch ngân hàng số" }, { en: "cybersecurity protocols", vi: "giao thức bảo mật mạng" }]
+                    },
+                    {
+                        en: "Because strict capital adequacy ratios were mandated by regulators, commercial banks strengthened their reserve assets against market volatility.",
+                        vi: "Do các cơ quan quản lý bắt buộc áp dụng tỷ lệ an toàn vốn nghiêm ngặt, các ngân hàng thương mại đã củng cố tài sản dự trữ để phòng ngừa biến động thị trường.",
+                        g: [{ en: "capital adequacy ratios", vi: "tỷ lệ an toàn vốn" }, { en: "reserve assets", vi: "tài sản dự trữ" }]
+                    },
+                    {
+                        en: "While traditional bank branches are closing due to cost reductions, mobile banking applications have expanded financial inclusion nationwide.",
+                        vi: "Mặc dù các chi nhánh ngân hàng truyền thống đang đóng cửa để giảm chi phí, các ứng dụng ngân hàng di động đã mở rộng phổ cập tài chính toàn quốc.",
+                        g: [{ en: "bank branches", vi: "chi nhánh ngân hàng" }, { en: "financial inclusion", vi: "phổ cập tài chính" }]
+                    },
+                    {
+                        en: "Having experienced severe credit defaults during the recession, commercial lenders implemented rigorous risk assessment procedures for loan applicants.",
+                        vi: "Sau khi trải qua nợ xấu nghiêm trọng trong kỳ suy thoái, các đơn vị cho vay thương mại đã áp dụng quy trình đánh giá rủi ro nghiêm ngặt đối với hồ sơ vay.",
+                        g: [{ en: "credit defaults", vi: "nợ xấu / vỡ nợ tín dụng" }, { en: "risk assessment procedures", vi: "quy trình đánh giá rủi ro" }]
+                    },
+                    {
+                        en: "If interest rate cuts are executed prematurely, economic liquidity may rise artificially, leading to speculative asset bubbles.",
+                        vi: "Nếu việc cắt giảm lãi suất được thực hiện quá sớm, thanh khoản kinh tế có thể tăng ảo, dẫn đến các bong bóng tài sản bong bóng.",
+                        g: [{ en: "interest rate cuts", vi: "cắt giảm lãi suất" }, { en: "speculative asset bubbles", vi: "bong bóng tài sản đầu cơ" }]
+                    },
+                    {
+                        en: "Biometric authentication systems, which utilize facial recognition, enhance payment security while streamlining user login verification.",
+                        vi: "Các hệ thống xác thực sinh trắc học, vốn sử dụng nhận diện khuôn mặt, giúp tăng cường bảo mật thanh toán đồng thời tối ưu việc xác minh đăng nhập.",
+                        g: [{ en: "Biometric authentication", vi: "Xác thực sinh trắc học" }, { en: "payment security", vi: "bảo mật thanh toán" }]
+                    },
+                    {
+                        en: "Provided that mortgage interest rates remain stable, residential real estate transactions are expected to recover gradually.",
+                        vi: "Với điều kiện lãi suất vay mua nhà duy trì ổn định, các giao dịch bất động sản nhà ở dự kiến sẽ phục hồi từng bước.",
+                        g: [{ en: "mortgage interest rates", vi: "lãi suất vay mua nhà" }, { en: "real estate transactions", vi: "giao dịch bất động sản" }]
+                    },
+                    {
+                        en: "Unless open banking regulations permit secure data sharing, fintech startups will struggle to integrate services with legacy bank systems.",
+                        vi: "Trừ khi các quy định ngân hàng mở cho phép chia sẻ dữ liệu an toàn, các công ty khởi nghiệp fintech sẽ gặp khó khăn khi tích hợp dịch vụ với ngân hàng truyền thống.",
+                        g: [{ en: "open banking regulations", vi: "quy định ngân hàng mở" }, { en: "fintech startups", vi: "khởi nghiệp công nghệ tài chính" }]
+                    },
+                    {
+                        en: "Automated credit scoring algorithms, which analyze transaction history instantly, enable fast approval for personal microloans.",
+                        vi: "Các thuật toán chấm điểm tín dụng tự động, vốn phân tích lịch sử giao dịch tức thì, cho phép phê duyệt nhanh các khoản vay nhỏ cá nhân.",
+                        g: [{ en: "credit scoring algorithms", vi: "thuật toán chấm điểm tín dụng" }, { en: "approval for microloans", vi: "phê duyệt khoản vay nhỏ" }]
+                    }
+                ],
+
+                Finance: [
+                    {
+                        en: "Although high-yield equities offer attractive dividend returns, conservative investors prefer government bonds due to lower default risks.",
+                        vi: "Mặc dù các cổ phiếu sinh lời cao mang lại lợi tức cổ tức hấp dẫn, các nhà đầu tư thận trọng vẫn ưu tiên trái phiếu chính phủ do rủi ro vỡ nợ thấp.",
+                        g: [{ en: "high-yield equities", vi: "cổ phiếu sinh lời cao" }, { en: "dividend returns", vi: "lợi tức cổ tức" }, { en: "government bonds", vi: "trái phiếu chính phủ" }]
+                    },
+                    {
+                        en: "Because global currency fluctuations impact export revenues, international corporations utilize hedging strategies to lock in foreign exchange rates.",
+                        vi: "Do sự biến động tiền tệ toàn cầu ảnh hưởng đến doanh thu xuất khẩu, các tập đoàn quốc tế áp dụng chiến lược phòng hộ để cố định tỷ giá hối đoái.",
+                        g: [{ en: "currency fluctuations", vi: "biến động tiền tệ" }, { en: "hedging strategies", vi: "chiến lược phòng hộ" }]
+                    },
+                    {
+                        en: "While stock market indices reached record highs yesterday, analysts warn that geopolitical tensions could cause sudden market corrections.",
+                        vi: "Dù các chỉ số chứng khoán đạt mức kỷ lục vào ngày hôm qua, các nhà phân tích cảnh báo rằng căng thẳng địa chính trị có thể gây ra đợt điều chỉnh giảm đột ngột.",
+                        g: [{ en: "stock market indices", vi: "chỉ số thị trường chứng khoán" }, { en: "market corrections", vi: "đợt điều chỉnh thị trường" }]
+                    },
+                    {
+                        en: "By diversifying portfolio assets across various sectors, wealth managers minimize losses when a single industry experiences a downturn.",
+                        vi: "Bằng cách đa dạng hóa danh mục tài sản trên nhiều lĩnh vực, các nhà quản lý tài sản tối thiểu hóa tổn thất khi một ngành duy nhất gặp suy thoái.",
+                        g: [{ en: "diversifying portfolio assets", vi: "đa dạng hóa tài sản danh mục" }, { en: "industry downturn", vi: "suy thoái ngành" }]
+                    },
+                    {
+                        en: "Having audited corporate accounting financial reports thoroughly, regulatory authorities uncovered undisclosed liabilities.",
+                        vi: "Sau khi kiểm toán kỹ lưỡng báo cáo tài chính của doanh nghiệp, cơ quan quản lý đã phát hiện các khoản nợ phải trả chưa được công khai.",
+                        g: [{ en: "audited financial reports", vi: "kiểm toán báo cáo tài chính" }, { en: "undisclosed liabilities", vi: "khoản nợ chưa công khai" }]
+                    },
+                    {
+                        en: "If central banks maintain tight monetary policies for too long, venture capital investments will dry up, choking technological innovation.",
+                        vi: "Nếu các ngân hàng trung ương duy trì chính sách tiền tệ thắt chặt quá lâu, các nguồn vốn đầu tư mạo hiểm sẽ cạn kiệt, làm kìm hãm sự đổi mới công nghệ.",
+                        g: [{ en: "tight monetary policies", vi: "chính sách tiền tệ thắt chặt" }, { en: "technological innovation", vi: "đổi mới công nghệ" }]
+                    },
+                    {
+                        en: "Corporate bond yields, which reflect institutional borrower creditworthiness, spiked following recent credit rating downgrades.",
+                        vi: "Lợi suất trái phiếu doanh nghiệp, vốn phản ánh mức độ uy tín tín dụng của bên vay tổ chức, đã tăng vọt sau các đợt hạ bậc xếp hạng tín nhiệm gần đây.",
+                        g: [{ en: "Corporate bond yields", vi: "Lợi suất trái phiếu doanh nghiệp" }, { en: "credit rating downgrades", vi: "hạ bậc xếp hạng tín nhiệm" }]
+                    },
+                    {
+                        en: "Provided that fiscal policies boost consumer spending, retail stock earnings will outperform quarterly estimates.",
+                        vi: "Với điều kiện các chính sách tài khóa thúc đẩy chi tiêu tiêu dùng, lợi nhuận cổ phiếu ngành bán lẻ sẽ vượt ước tính hàng quý.",
+                        g: [{ en: "fiscal policies", vi: "chính sách tài khóa" }, { en: "quarterly estimates", vi: "ước tính hàng quý" }]
+                    },
+                    {
+                        en: "Unless clear regulatory frameworks govern digital asset trading, institutional investors will refrain from allocating capital to cryptocurrencies.",
+                        vi: "Trừ khi có khung pháp lý rõ ràng điều chỉnh giao dịch tài sản số, các nhà đầu tư tổ chức sẽ ngần ngại phân bổ vốn vào tiền mã hóa.",
+                        g: [{ en: "regulatory frameworks", vi: "khung pháp lý" }, { en: "institutional investors", vi: "nhà đầu tư tổ chức" }]
+                    },
+                    {
+                        en: "Exchange-traded funds, which offer low-cost exposure to broad markets, have gained massive popularity among passive retail investors.",
+                        vi: "Các quỹ hoán đổi danh mục, vốn cho phép tiếp cận thị trường rộng với chi phí thấp, đã thu hút sự ưa chuộng lớn từ các nhà đầu tư cá nhân thụ động.",
+                        g: [{ en: "Exchange-traded funds", vi: "Quỹ hoán đổi danh mục (ETF)" }, { en: "passive retail investors", vi: "nhà đầu tư cá nhân thụ động" }]
+                    }
+                ],
+
+                Legal: [
+                    {
+                        en: "Commercial arbitration provides an efficient mechanism for resolving cross-border contract disputes without entering lengthy court litigation.",
+                        vi: "Trọng tài thương mại cung cấp một cơ chế hiệu quả để giải quyết các tranh chấp hợp đồng xuyên biên giới mà không cần tham gia tụng đình kéo dài tại tòa.",
+                        g: [{ en: "Commercial arbitration", vi: "Trọng tài thương mại" }, { en: "contract disputes", vi: "tranh chấp hợp đồng" }, { en: "court litigation", vi: "tụng đình tại tòa" }]
+                    },
+                    {
+                        en: "Although intellectual property laws safeguard patent holder rights, critics argue that excessive protection stifles market competition.",
+                        vi: "Mặc dù luật sở hữu trí tuệ bảo vệ quyền của chủ bằng sáng chế, các nhà phản biện cho rằng sự bảo hộ quá mức sẽ kìm hãm sự cạnh tranh thị trường.",
+                        g: [{ en: "intellectual property laws", vi: "luật sở hữu trí tuệ" }, { en: "patent holder rights", vi: "quyền của chủ bằng sáng chế" }]
+                    },
+                    {
+                        en: "Because strict data privacy regulations mandate explicit user consent, tech companies are overhaul privacy policy compliance frameworks.",
+                        vi: "Do các quy định bảo mật dữ liệu nghiêm ngặt bắt buộc phải có sự đồng ý rõ ràng từ người dùng, các công ty công nghệ đang cải tổ khung tuân thủ chính sách.",
+                        g: [{ en: "data privacy regulations", vi: "quy định bảo mật dữ liệu" }, { en: "explicit user consent", vi: "sự đồng ý rõ ràng của người dùng" }]
+                    },
+                    {
+                        en: "While international treaties set global legal standards, domestic implementation depends on legislative approval within each nation.",
+                        vi: "Dù các hiệp ước quốc tế đưa ra quy chuẩn pháp lý toàn cầu, việc triển khai trong nước phụ thuộc vào sự phê chuẩn lập pháp của từng quốc gia.",
+                        g: [{ en: "international treaties", vi: "hiệp ước quốc tế" }, { en: "legislative approval", vi: "phê chuẩn lập pháp" }]
+                    },
+                    {
+                        en: "By establishing binding legal precedents, appellate court decisions clarify statutory ambiguities for lower judiciary tribunals.",
+                        vi: "Bằng việc xác lập các tiền lệ pháp có giá trị ràng buộc, các quyết định của tòa phúc thẩm làm rõ các điểm mơ hồ trong luật cho các tòa án cấp dưới.",
+                        g: [{ en: "binding legal precedents", vi: "tiền lệ pháp ràng buộc" }, { en: "appellate court decisions", vi: "quyết định tòa phúc thẩm" }]
+                    },
+                    {
+                        en: "Having breached non-disclosure agreement covenants, the former employee faced substantial monetary claims in court proceedings.",
+                        vi: "Sau khi vi phạm các điều khoản thỏa thuận bảo mật thông tin, cựu nhân viên phải đối mặt với các yêu cầu bồi thường tiền tệ lớn tại phiên tòa.",
+                        g: [{ en: "non-disclosure agreement", vi: "thỏa thuận bảo mật thông tin" }, { en: "monetary claims", vi: "yêu cầu bồi thường tiền tệ" }]
+                    },
+                    {
+                        en: "If corporate entities fail to comply with anti-money laundering statutes, regulatory bodies will levy catastrophic financial penalties.",
+                        vi: "Nếu các tổ chức doanh nghiệp không tuân thủ các đạo luật chống rửa tiền, các cơ quan quản lý sẽ xử phạt tài chính cực kỳ nặng nề.",
+                        g: [{ en: "anti-money laundering statutes", vi: "đạo luật chống rửa tiền" }, { en: "financial penalties", vi: "xử phạt tài chính" }]
+                    },
+                    {
+                        en: "Environmental protection laws, which assign strict liability to industrial polluters, require companies to restore damaged ecosystems.",
+                        vi: "Luật bảo vệ môi trường, vốn áp đặt trách nhiệm pháp lý nghiêm ngặt đối với các bên gây ô nhiễm, yêu cầu công ty phục hồi hệ sinh thái hư hại.",
+                        g: [{ en: "strict liability", vi: "trách nhiệm pháp lý nghiêm ngặt" }, { en: "industrial polluters", vi: "bên gây ô nhiễm công nghiệp" }]
+                    },
+                    {
+                        en: "Provided that contract terms are executed under mutual agreement without coercion, agreements remain enforceable under civil law.",
+                        vi: "Với điều kiện các điều khoản hợp đồng được thực hiện theo thỏa thuận tự nguyện không ép buộc, hợp đồng có hiệu lực thi hành theo luật dân sự.",
+                        g: [{ en: "executed under mutual agreement", vi: "thực hiện theo thỏa thuận tự nguyện" }, { en: "enforceable under civil law", vi: "có hiệu lực theo luật dân sự" }]
+                    },
+                    {
+                        en: "Unless labor laws regulate gig economy employment contracts, freelance workers will lack basic medical insurance coverage.",
+                        vi: "Trừ khi luật lao động điều chỉnh các hợp đồng công việc tự do (gig economy), người làm tự do sẽ thiếu sự bảo vệ của bảo hiểm y tế cơ bản.",
+                        g: [{ en: "gig economy", vi: "nền kinh tế việc tự do" }, { en: "medical insurance coverage", vi: "bảo hiểm y tế" }]
+                    }
+                ],
+
+                Politics: [
+                    {
+                        en: "By signing bilateral trade agreements, member nations aim to lower tariffs and streamline customs procedures across mutual borders.",
+                        vi: "Bằng việc ký kết các hiệp định thương mại song phương, các quốc gia thành viên hướng tới hạ thuế quan và tinh gọn thủ tục hải quan qua biên giới chung.",
+                        g: [{ en: "bilateral trade agreements", vi: "hiệp định thương mại song phương" }, { en: "streamline customs procedures", vi: "tinh gọn thủ tục hải quan" }]
+                    },
+                    {
+                        en: "Although diplomatic negotiations require extended patience, peaceful compromise remains superior to economic sanctions or military conflicts.",
+                        vi: "Mặc dù đàm phán ngoại giao đòi hỏi sự kiên nhẫn kéo dài, thỏa hiệp hòa bình vẫn tốt hơn nhiều so với các lệnh trừng phạt kinh tế hay xung đột quân sự.",
+                        g: [{ en: "diplomatic negotiations", vi: "đàm phán ngoại giao" }, { en: "economic sanctions", vi: "lệnh trừng phạt kinh tế" }]
+                    },
+                    {
+                        en: "Because electoral reform bills faced opposition in parliament, lawmakers held multi-party debates to draft a compromise version.",
+                        vi: "Do các dự luật cải cách bầu cử gặp phải sự phản đối tại nghị viện, các nhà lập pháp đã tổ chức tranh luận đa đảng để dự thảo phiên bản thỏa hiệp.",
+                        g: [{ en: "electoral reform bills", vi: "dự luật cải cách bầu cử" }, { en: "multi-party debates", vi: "tranh luận đa đảng" }]
+                    },
+                    {
+                        en: "While decentralized government delegates authority to local councils, national defense matters remain under central state control.",
+                        vi: "Mặc dù chính quyền phân quyền trao bớt thẩm quyền cho các hội đồng địa phương, các vấn đề quốc phòng vẫn nằm dưới sự kiểm soát của nhà nước trung ương.",
+                        g: [{ en: "decentralized government", vi: "chính quyền phân quyền" }, { en: "central state control", vi: "kiểm soát của nhà nước trung ương" }]
+                    },
+                    {
+                        en: "Having ratified international climate treaties, parliamentary representatives enacted domestic laws to curb carbon emissions by 2030.",
+                        vi: "Sau khi phê chuẩn các hiệp ước khí hậu quốc tế, các đại biểu nghị viện đã ban hành luật trong nước để cắt giảm khí thải carbon vào năm 2030.",
+                        g: [{ en: "ratified international treaties", vi: "phê chuẩn hiệp ước quốc tế" }, { en: "enacted domestic laws", vi: "ban hành luật trong nước" }]
+                    },
+                    {
+                        en: "If geopolitical tensions escalate further along maritime borders, global shipping lines will face soaring insurance costs.",
+                        vi: "Nếu căng thẳng địa chính trị leo thang hơn nữa dọc theo các biên giới hàng hải, các tuyến vận tải biển toàn cầu sẽ đối mặt với chi phí bảo hiểm tăng vọt.",
+                        g: [{ en: "geopolitical tensions", vi: "căng thẳng địa chính trị" }, { en: "maritime borders", vi: "biên giới hàng hải" }]
+                    },
+                    {
+                        en: "Public policy initiatives, which address wealth inequality, depend heavily on progressive taxation structures.",
+                        vi: "Các sáng kiến chính sách công, vốn giải quyết sự bất bình đẳng giàu nghèo, phụ thuộc lớn vào cơ cấu thuế lũy tiến.",
+                        g: [{ en: "Public policy initiatives", vi: "Sáng kiến chính sách công" }, { en: "progressive taxation", vi: "thuế lũy tiến" }]
+                    },
+                    {
+                        en: "Provided that freedom of the press is protected constitutionally, investigative journalism can expose systemic governance corruption effectively.",
+                        vi: "Với điều kiện tự do báo chí được bảo vệ về mặt hiến pháp, báo chí điều tra có thể phanh phui tham nhũng quản trị mang tính hệ thống một cách hiệu quả.",
+                        g: [{ en: "protected constitutionally", vi: "bảo vệ về mặt hiến pháp" }, { en: "systemic governance corruption", vi: "tham nhũng quản trị hệ thống" }]
+                    },
+                    {
+                        en: "Unless civil society organizations participate in policy consultations, public trust in governmental institutions will continue to erode.",
+                        vi: "Trừ khi các tổ chức xã hội dân sự được tham gia vào tham vấn chính sách, niềm tin công chúng vào các cơ quan chính phủ sẽ tiếp tục suy giảm.",
+                        g: [{ en: "policy consultations", vi: "tham vấn chính sách" }, { en: "governmental institutions", vi: "cơ quan chính phủ" }]
+                    },
+                    {
+                        en: "International peacekeeping missions, which operate under United Nations mandates, attempt to stabilize conflict-torn regions worldwide.",
+                        vi: "Các sứ mệnh gìn giữ hòa bình quốc tế, vốn hoạt động dưới ủy nhiệm của Liên Hợp Quốc, nỗ lực ổn định các vùng bị chiến tranh tàn phá trên thế giới.",
+                        g: [{ en: "peacekeeping missions", vi: "sứ mệnh gìn giữ hòa bình" }, { en: "United Nations mandates", vi: "ủy nhiệm của Liên Hợp Quốc" }]
+                    }
+                ]
+            };
+
+            Object.keys(b2ComplexData).forEach(catName => {
+                const list = b2ComplexData[catName];
+                list.forEach((item, idx) => {
+                    INITIAL_EXERCISES.push({
+                        id: `${catName.toLowerCase().substring(0,3)}_${idx + 1 < 10 ? '0' + (idx + 1) : idx + 1}`,
+                        category: catName,
+                        en: item.en,
+                        vi: item.vi,
+                        glossary: item.g
+                    });
+                });
+            });
+        })();
+
+        // 60 TRANSLATION TIPS & THEORIES
+        const TRANSLATION_TIPS_BANK = [
+            "💡 Kỹ thuật Danh từ hóa: Tiếng Anh ưa dùng danh từ ('adaptation'), còn tiếng Việt ưa dùng động từ/tính từ ('thích ứng').",
+            "💡 Thể bị động: Không phải từ 'by' nào cũng dịch là 'bởi'. Chủ động đưa chủ thể lên đầu câu giúp văn phong mượt hơn.",
+            "💡 Tách mệnh đề: Với các câu phức dài 2-3 vế trong tiếng Anh, có thể tách thành 2 câu ngắn trong tiếng Việt.",
+            "💡 Xử lý Từ nối: Các liên từ như 'However', 'Moreover' nên đặt ở đầu vế câu tiếng Việt thay vì chèn ở giữa.",
+            "💡 Dịch câu điều kiện: 'Provided that' nên dịch là 'Với điều kiện...' hoặc 'Chỉ cần...' thay vì dịch cứng là 'Nếu'.",
+            "💡 Xử lý 'Allow/Enable': Thay vì dịch thô 'cho phép', hãy dùng các từ như 'giúp', 'tạo điều kiện cho'.",
+            "💡 Tránh lỗi Tây hóa: Hạn chế dùng quá nhiều từ 'của' trong tiếng Việt ('phát triển kinh tế' thay vì 'sự phát triển của kinh tế').",
+            "💡 Sắc thái văn phong: Văn bản trang trọng cần dùng từ Hán-Việt tương đương ('bảo tồn' thay vì 'giữ', 'hỗ trợ' thay vì 'giúp')."
+        ];
+
+        // 5-TIER FEEDBACK BANK
+        const DETAILED_FEEDBACK_BANK = {
+            TOO_SHORT: {
+                title: "🔴 Bản dịch quá ngắn",
+                bg: "bg-red-50 text-red-800 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-900",
+                icon: "fa-circle-xmark text-red-500",
+                texts: [
+                    "Vui lòng nhập câu dịch trọn vẹn hơn để hệ thống phân tích kỹ lưỡng.",
+                    "Bản dịch hiện tại mới chỉ có vài từ lẻ, chưa đủ vế câu chính."
+                ]
+            },
+            EXCELLENT: {
+                title: "👑 Mức Xuất Sắc",
+                bg: "bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900",
+                icon: "fa-crown text-amber-500",
+                texts: [
+                    "Bản dịch xuất sắc! Diễn đạt tự nhiên, sát nghĩa và thuần Việt mượt mà.",
+                    "Tuyệt vời! Bạn chuyển ngữ rất trôi chảy và áp dụng chính xác từ vựng chuyên ngành."
+                ]
+            },
+            VERY_GOOD: {
+                title: "🟢 Mức Giỏi",
+                bg: "bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900",
+                icon: "fa-circle-check text-emerald-500",
+                texts: [
+                    "Bản dịch rất tốt! Đúng cấu trúc và sát nghĩa gốc.",
+                    "Khá lắm! Câu dịch truyền tải trọn vẹn thông điệp, văn phong trôi chảy."
+                ]
+            },
+            GOOD: {
+                title: "🔵 Mức Khá",
+                bg: "bg-sky-50 text-sky-900 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-900",
+                icon: "fa-thumbs-up text-sky-500",
+                texts: [
+                    "Bản dịch khá! Đã nắm đúng ý chính, chỉ cần tinh chỉnh chút cấu trúc câu.",
+                    "Tốt! Bạn đã nắm ngữ cảnh, chú ý gọt giũa thêm một vài từ nối cho mượt hơn."
+                ]
+            },
+            AVERAGE: {
+                title: "🟣 Mức Trung Bình",
+                bg: "bg-purple-50 text-purple-900 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-900",
+                icon: "fa-triangle-exclamation text-purple-500",
+                texts: [
+                    "Bản dịch đạt mức cơ bản. Cần bổ sung thêm một số từ vựng cốt lõi.",
+                    "Đã dịch được khung chính, hãy đối chiếu thêm với bản dịch mẫu bên dưới nhé!"
+                ]
+            },
+            NEEDS_WORK: {
+                title: "🟠 Mức Cần Cố Gắng",
+                bg: "bg-orange-50 text-orange-900 border-orange-200 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-900",
+                icon: "fa-pen-to-square text-orange-500",
+                texts: [
+                    "Bản dịch chưa thực sự sát nghĩa. Hãy tham khảo bản dịch mẫu để rút kinh nghiệm.",
+                    "Cố gắng lên! Chú ý xác định kỹ chủ ngữ và động từ chính trước khi dịch."
+                ]
+            }
+        };
+
+        // STATE VARIABLES
+        let exercises = [];
+        let filteredExercises = [];
+        let currentIndex = 0;
+        let currentMode = 'EN_VI';
+        let selectedCategory = 'ALL';
+        let searchQuery = '';
+        let currentFont = 'font-inter';
+        let realTimeTimer = null;
+
+        // AUDIO PLAYBACK STATE
+        let currentAudio = null;
+        let isSpeaking = false;
+
+        // --- 2. INITIALIZATION ---
+        window.onload = function() {
+            exercises = [...INITIAL_EXERCISES];
+            setupCategoryOptions();
+            applyFilters();
+            renderCurrentExercise();
+            refreshRandomTip();
+            checkApiKeyStatus();
+            setupMobileSwipeGestures();
+        };
+
+        function checkApiKeyStatus() {
+            const savedKey = localStorage.getItem('gemini_api_key') || '';
+            const statusHint = document.getElementById('api-status-hint');
+            const evalBtnText = document.getElementById('eval-main-btn-text');
+            const evalBtnIcon = document.getElementById('eval-main-btn-icon');
+
+            if (statusHint) {
+                statusHint.textContent = savedKey ? '✨ Gemini AI (Chi tiết)' : '⚡ Chế độ Local';
+                statusHint.className = savedKey ? 'text-xs text-emerald-600 font-semibold' : 'text-xs text-slate-400';
+            }
+
+            if (evalBtnText && evalBtnIcon) {
+                if (savedKey) {
+                    evalBtnText.textContent = "Gemini Chấm Chi Tiết";
+                    evalBtnIcon.className = "fa-solid fa-brain";
+                } else {
+                    evalBtnText.textContent = "Xem Đáp Án Mẫu";
+                    evalBtnIcon.className = "fa-solid fa-eye";
+                }
+            }
+        }
+
+        function saveApiKey() {
+            const keyInput = document.getElementById('api-key-input');
+            if (keyInput) {
+                const key = keyInput.value.trim();
+                localStorage.setItem('gemini_api_key', key);
+                checkApiKeyStatus();
+                toggleApiModal();
+            }
+        }
+
+        function setupCategoryOptions() {
+            const categories = ['ALL', ...new Set(INITIAL_EXERCISES.map(ex => ex.category))];
+            const select = document.getElementById('topic-select');
+            if (select) {
+                select.innerHTML = categories.map(cat => `
+                    <option value="${cat}">${cat === 'ALL' ? 'Tất cả chủ đề' : cat}</option>
+                `).join('');
+            }
+        }
+
+        function applyFilters() {
+            filteredExercises = exercises.filter(ex => {
+                const matchesCat = selectedCategory === 'ALL' || ex.category === selectedCategory;
+                const matchesQuery = searchQuery === '' || 
+                    ex.en.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    ex.vi.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCat && matchesQuery;
+            });
+
+            currentIndex = 0;
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const counter = document.getElementById('exercise-counter');
+            if (counter) {
+                counter.textContent = filteredExercises.length === 0 ? "0/0" : `${currentIndex + 1}/${filteredExercises.length}`;
+            }
+        }
+
+        function renderCurrentExercise() {
+            stopAudio();
+
+            const sourceTextEl = document.getElementById('source-text');
+            const glossaryChipsEl = document.getElementById('glossary-chips');
+            const userTransEl = document.getElementById('user-translation');
+            const sourceLangLabel = document.getElementById('source-lang-label');
+            const targetLangLabel = document.getElementById('target-lang-label');
+            const evalDetails = document.getElementById('eval-details');
+            const evalStatusMsg = document.getElementById('eval-status-message');
+
+            if (filteredExercises.length === 0) {
+                if (sourceTextEl) sourceTextEl.textContent = "Không tìm thấy câu bài tập phù hợp.";
+                if (glossaryChipsEl) glossaryChipsEl.innerHTML = "";
+                if (userTransEl) userTransEl.value = "";
+                updateCounter();
+                return;
+            }
+
+            const current = filteredExercises[currentIndex];
+
+            if (currentMode === 'EN_VI') {
+                if (sourceLangLabel) sourceLangLabel.textContent = "Văn bản gốc (Tiếng Anh)";
+                if (targetLangLabel) targetLangLabel.textContent = "Bản dịch của bạn (Tiếng Việt):";
+                if (sourceTextEl) sourceTextEl.textContent = current.en;
+            } else {
+                if (sourceLangLabel) sourceLangLabel.textContent = "Văn bản gốc (Tiếng Việt)";
+                if (targetLangLabel) targetLangLabel.textContent = "Bản dịch của bạn (Tiếng Anh):";
+                if (sourceTextEl) sourceTextEl.textContent = current.vi;
+            }
+
+            if (glossaryChipsEl) {
+                if (current.glossary && current.glossary.length > 0) {
+                    glossaryChipsEl.innerHTML = current.glossary.map(g => {
+                        const frontText = currentMode === 'EN_VI' ? g.en : g.vi;
+                        const backText = currentMode === 'EN_VI' ? g.vi : g.en;
+                        return `
+                            <div class="group relative bg-slate-100 dark:bg-slate-700/80 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs sm:text-sm cursor-pointer transition flex items-center gap-1.5 shadow-sm">
+                                <span class="font-bold text-slate-700 dark:text-slate-200">${frontText}</span>
+                                <span class="text-slate-400 dark:text-slate-500">:</span>
+                                <span class="text-indigo-600 dark:text-indigo-400 font-semibold blur-sm group-hover:blur-none transition-all duration-200 select-none group-hover:select-text">${backText}</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    glossaryChipsEl.innerHTML = `<span class="text-xs text-slate-400 italic">Không có từ gợi ý</span>`;
+                }
+            }
+
+            if (userTransEl) userTransEl.value = "";
+            if (evalDetails) evalDetails.classList.add('hidden');
+            if (evalStatusMsg) evalStatusMsg.classList.remove('hidden');
+            updateCounter();
+        }
+
+        function refreshRandomTip() {
+            const tipEl = document.getElementById('random-tip-content');
+            if (tipEl) {
+                const randomTip = TRANSLATION_TIPS_BANK[Math.floor(Math.random() * TRANSLATION_TIPS_BANK.length)];
+                tipEl.textContent = randomTip;
+            }
+        }
+
+        function onUserTranslationInput(val) {
+            clearTimeout(realTimeTimer);
+            realTimeTimer = setTimeout(() => {
+                if (val.trim().length > 0) {
+                    evaluateTranslationWithAI(false);
+                }
+            }, 350);
+        }
+
+        function evaluateTranslationWithAI(forceShow = true) {
+            if (filteredExercises.length === 0) return;
+            const userVal = document.getElementById('user-translation').value.trim();
+            const current = filteredExercises[currentIndex];
+            const reference = currentMode === 'EN_VI' ? current.vi : current.en;
+
+            const evalDetails = document.getElementById('eval-details');
+            const evalStatusMsg = document.getElementById('eval-status-message');
+            const feedbackAlert = document.getElementById('feedback-alert');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackText = document.getElementById('feedback-text');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const refEl = document.getElementById('reference-translation');
+            const altListEl = document.getElementById('alternatives-list');
+
+            const apiKey = localStorage.getItem('gemini_api_key');
+
+            if (forceShow || userVal.length > 0) {
+                evalStatusMsg.classList.add('hidden');
+                evalDetails.classList.remove('hidden');
+                evalDetails.classList.add('flex');
+            }
+
+            refEl.textContent = reference;
+
+            if (userVal.split(/\s+/).filter(Boolean).length < 4) {
+                const item = DETAILED_FEEDBACK_BANK.TOO_SHORT;
+                feedbackAlert.className = `p-3.5 rounded-xl text-xs sm:text-sm font-medium flex items-start gap-2.5 border ${item.bg}`;
+                feedbackIcon.className = `fa-solid ${item.icon} text-base mt-0.5 flex-none`;
+                feedbackTitle.textContent = item.title;
+                feedbackText.textContent = item.texts[Math.floor(Math.random() * item.texts.length)];
+                altListEl.innerHTML = `<div class="p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs text-slate-500 italic">Vui lòng nhập thêm từ để hiển thị gợi ý từ vựng.</div>`;
+                return;
+            }
+
+            if (apiKey && forceShow) {
+                evaluateWithGeminiAPI(apiKey, current, userVal, reference);
+                return;
+            }
+
+            // Local Evaluation Logic
+            const refWords = reference.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").split(/\s+/);
+            const userWords = userVal.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").split(/\s+/);
+            
+            let matchCount = 0;
+            userWords.forEach(w => { if (refWords.includes(w)) matchCount++; });
+            const ratio = matchCount / Math.max(refWords.length, 1);
+
+            let feedbackObj = DETAILED_FEEDBACK_BANK.AVERAGE;
+            if (ratio >= 0.75) feedbackObj = DETAILED_FEEDBACK_BANK.EXCELLENT;
+            else if (ratio >= 0.55) feedbackObj = DETAILED_FEEDBACK_BANK.VERY_GOOD;
+            else if (ratio >= 0.38) feedbackObj = DETAILED_FEEDBACK_BANK.GOOD;
+            else if (ratio >= 0.22) feedbackObj = DETAILED_FEEDBACK_BANK.AVERAGE;
+            else feedbackObj = DETAILED_FEEDBACK_BANK.NEEDS_WORK;
+
+            feedbackAlert.className = `p-3.5 rounded-xl text-xs sm:text-sm font-medium flex items-start gap-2.5 border ${feedbackObj.bg}`;
+            feedbackIcon.className = `fa-solid ${feedbackObj.icon} text-base mt-0.5 flex-none`;
+            feedbackTitle.textContent = feedbackObj.title;
+            feedbackText.textContent = feedbackObj.texts[Math.floor(Math.random() * feedbackObj.texts.length)];
+
+            if (current.glossary && current.glossary.length > 0) {
+                altListEl.innerHTML = current.glossary.map(g => `
+                    <div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex justify-between">
+                        <span class="font-bold text-indigo-600 dark:text-indigo-400">${g.en}</span>
+                        <span>${g.vi}</span>
+                    </div>
+                `).join('');
+            } else {
+                altListEl.innerHTML = `<div class="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs text-slate-500 italic">Không có đề xuất thêm.</div>`;
+            }
+        }
+
+        async function evaluateWithGeminiAPI(apiKey, current, userVal, reference) {
+            const feedbackAlert = document.getElementById('feedback-alert');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackText = document.getElementById('feedback-text');
+            const feedbackIcon = document.getElementById('feedback-icon');
+
+            feedbackAlert.className = "p-3.5 rounded-xl text-xs sm:text-sm font-medium flex items-start gap-2.5 border bg-indigo-50 text-indigo-900 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-900 animate-pulse";
+            feedbackIcon.className = "fa-solid fa-spinner fa-spin text-indigo-500 text-base mt-0.5 flex-none";
+            feedbackTitle.textContent = "Gemini AI đang phân tích chi tiết...";
+            feedbackText.textContent = "Vui lòng đợi trong giây lát...";
+
+            try {
+                const prompt = `Bạn là chuyên gia biên dịch Anh-Việt cao cấp. Hãy phân tích bài dịch sau:
+- Câu gốc: "${currentMode === 'EN_VI' ? current.en : current.vi}"
+- Đáp án mẫu: "${reference}"
+- Bản dịch của học viên: "${userVal}"
+
+Trả về nhận xét được định dạng gồm 3 mục rõ ràng:
+1. 🎯 Phân tích chi tiết (ngữ pháp, tính chính xác).
+2. 💡 Gợi ý gọt giũa (để mượt mà và thuần Việt hơn).
+3. ✨ Cụm từ đắt giá (từ vựng nên học hỏi).`;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                    const aiText = data.candidates[0].content.parts[0].text.trim();
+                    feedbackAlert.className = "p-3.5 rounded-xl text-xs sm:text-sm font-medium flex items-start gap-2.5 border bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900";
+                    feedbackIcon.className = "fa-solid fa-brain text-emerald-500 text-base mt-0.5 flex-none";
+                    feedbackTitle.textContent = "✨ Nhận xét chi tiết từ Gemini AI";
+                    feedbackText.innerHTML = aiText.replace(/\n/g, '<br>');
+                } else {
+                    throw new Error("Không nhận được phản hồi từ Gemini API.");
+                }
+            } catch (err) {
+                feedbackAlert.className = "p-3.5 rounded-xl text-xs sm:text-sm font-medium flex items-start gap-2.5 border bg-red-50 text-red-900 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-900";
+                feedbackIcon.className = "fa-solid fa-circle-exclamation text-red-500 text-base mt-0.5 flex-none";
+                feedbackTitle.textContent = "Lỗi kết nối Gemini API";
+                feedbackText.textContent = "Không thể phân tích bằng AI. Vui lòng kiểm tra lại API Key.";
+            }
+        }
+
+        async function generateAIExercise() {
+            const apiKey = localStorage.getItem('gemini_api_key');
+            if (!apiKey) {
+                alert("Vui lòng cấu hình Gemini API Key để tự động tạo câu B2 mới!");
+                toggleApiModal();
+                return;
+            }
+
+            const btn = document.getElementById('ai-generate-btn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo...`;
+            btn.disabled = true;
+
+            const category = selectedCategory === 'ALL' ? 'Business' : selectedCategory;
+
+            try {
+                const prompt = `Tạo 1 câu bài tập biên dịch Anh - Việt chuẩn B2 (câu phức hoặc câu ghép) thuộc chủ đề "${category}".
+Trả về duy nhất JSON hợp lệ (không chứa từ markdown block hay văn bản thừa khác):
+{
+  "en": "Câu tiếng Anh B2",
+  "vi": "Bản dịch tiếng Việt chuẩn mượt mà",
+  "glossary": [{"en": "cụm 1", "vi": "nghĩa 1"}]
+}`;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                    let rawText = data.candidates[0].content.parts[0].text.trim();
+                    rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                    const newEx = JSON.parse(rawText);
+                    newEx.id = `ai_${Date.now()}`;
+                    newEx.category = category;
+
+                    exercises.unshift(newEx);
+                    applyFilters();
+                    currentIndex = 0;
+                    renderCurrentExercise();
+                    alert(`✨ Gemini AI đã tạo thành công câu bài tập B2 mới cho chủ đề ${category}!`);
+                } else {
+                    throw new Error("Phản hồi rỗng từ Gemini API.");
+                }
+            } catch (err) {
+                alert("Không thể sinh câu mới. Vui lòng kiểm tra lại Gemini API Key.");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        function nextExercise() {
+            if (filteredExercises.length === 0) return;
+            currentIndex = (currentIndex + 1) % filteredExercises.length;
+            renderCurrentExercise();
+            refreshRandomTip();
+        }
+
+        function prevExercise() {
+            if (filteredExercises.length === 0) return;
+            currentIndex = (currentIndex - 1 + filteredExercises.length) % filteredExercises.length;
+            renderCurrentExercise();
+            refreshRandomTip();
+        }
+
+        function pickRandomExercise() {
+            if (filteredExercises.length <= 1) return;
+            let nextIndex;
+            do {
+                nextIndex = Math.floor(Math.random() * filteredExercises.length);
+            } while (nextIndex === currentIndex);
+            currentIndex = nextIndex;
+            renderCurrentExercise();
+            refreshRandomTip();
+        }
+
+        function setTranslationMode(mode) {
+            currentMode = mode;
+            document.getElementById('mode-en-vi').className = mode === 'EN_VI' ? 
+                'px-3 py-1.5 text-xs sm:text-sm font-bold rounded-md bg-indigo-600 text-white shadow-sm transition' : 
+                'px-3 py-1.5 text-xs sm:text-sm font-bold rounded-md text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition';
+            document.getElementById('mode-vi-en').className = mode === 'VI_EN' ? 
+                'px-3 py-1.5 text-xs sm:text-sm font-bold rounded-md bg-indigo-600 text-white shadow-sm transition' : 
+                'px-3 py-1.5 text-xs sm:text-sm font-bold rounded-md text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition';
+            renderCurrentExercise();
+        }
+
+        function onCategoryFilterChange(val) {
+            selectedCategory = val;
+            applyFilters();
+            renderCurrentExercise();
+        }
+
+        function onSearchInput(val) {
+            searchQuery = val;
+            applyFilters();
+            renderCurrentExercise();
+        }
+
+        function clearInput() {
+            const el = document.getElementById('user-translation');
+            if (el) el.value = "";
+        }
+
+        function toggleFontFamily() {
+            currentFont = currentFont === 'font-inter' ? 'font-vinamilk' : 'font-inter';
+            document.body.classList.remove('font-inter', 'font-vinamilk');
+            document.body.classList.add(currentFont);
+            const label = document.getElementById('font-btn-label');
+            if (label) {
+                label.textContent = currentFont === 'font-inter' ? 'Font: Inter' : 'Font: Mali';
+            }
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function toggleApiModal() {
+            const modal = document.getElementById('api-modal');
+            if (modal) {
+                modal.classList.toggle('hidden');
+                if (!modal.classList.contains('hidden')) {
+                    const savedKey = localStorage.getItem('gemini_api_key') || '';
+                    document.getElementById('api-key-input').value = savedKey;
+                }
+            }
+        }
+
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            isSpeaking = false;
+            updateAudioButtonUI(false);
+        }
+
+        function updateAudioButtonUI(playing) {
+            const btnLabel = document.getElementById('tts-label');
+            const btnIcon = document.getElementById('tts-icon');
+            if (btnLabel && btnIcon) {
+                if (playing) {
+                    btnLabel.textContent = "Dừng đọc";
+                    btnIcon.className = "fa-solid fa-circle-stop text-red-500 animate-pulse";
+                } else {
+                    btnLabel.textContent = "Nghe đọc";
+                    btnIcon.className = "fa-solid fa-volume-high text-indigo-500";
+                }
+            }
+        }
+
+        function toggleAudio() {
+            if (isSpeaking) {
+                stopAudio();
+                return;
+            }
+
+            if (filteredExercises.length === 0) return;
+            const current = filteredExercises[currentIndex];
+            const textToRead = currentMode === 'EN_VI' ? current.en : current.vi;
+            const lang = currentMode === 'EN_VI' ? 'en' : 'vi';
+
+            isSpeaking = true;
+            updateAudioButtonUI(true);
+
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textToRead)}&tl=${lang}&client=tw-ob`;
+            currentAudio = new Audio(url);
+
+            currentAudio.play().then(() => {
+                currentAudio.onended = () => {
+                    isSpeaking = false;
+                    updateAudioButtonUI(false);
+                };
+            }).catch(err => {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(textToRead);
+                    utterance.lang = lang === 'en' ? 'en-US' : 'vi-VN';
+                    utterance.onend = () => {
+                        isSpeaking = false;
+                        updateAudioButtonUI(false);
+                    };
+                    utterance.onerror = () => {
+                        isSpeaking = false;
+                        updateAudioButtonUI(false);
+                    };
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    isSpeaking = false;
+                    updateAudioButtonUI(false);
+                }
+            });
+        }
+
+        function setupMobileSwipeGestures() {
+            const swipeArea = document.getElementById('swipe-area');
+            if (!swipeArea) return;
+
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            swipeArea.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            swipeArea.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleGesture();
+            }, { passive: true });
+
+            function handleGesture() {
+                const diff = touchEndX - touchStartX;
+                if (Math.abs(diff) > 60) {
+                    if (diff < 0) nextExercise();
+                    else prevExercise();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
